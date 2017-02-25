@@ -1,0 +1,7 @@
+[package]
+name = "rssnek"
+version = "0.1.0"
+authors = ["Niklas Thörne <notrupertthorne@gmail.com>"]
+
+[dependencies]
+ncurses = "5.85.0"
