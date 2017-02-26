@@ -1,15 +1,23 @@
-extern crate ncurses;
+extern crate rssnek;
 
-use ncurses::*;
+use rssnek::display;
+use rssnek::input;
+
+
+/* TODO:
+ *   Create an event dispatcher; this dispatcher should dispatch Event to any
+ *   subscribers. API needs to contain subscribe, unsubscribe and dispatch.
+ *   On Event, the subscriber needs the instance of the dispatcher in order
+ *   to be able to dispatch new events.
+ */
 
 fn main() {
-    initscr();
+    display::init();
 
-    printw("Hello, world! (press any key to terminate)");
+    loop {
+        input::process_input();
+        display::show();
+    }
 
-    refresh();
-
-    getch();
-
-    endwin();
+    display::deinit();
 }
