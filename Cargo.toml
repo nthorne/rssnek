@@ -5,3 +5,8 @@ authors = ["Niklas Thörne <notrupertthorne@gmail.com>"]
 
 [dependencies]
 ncurses = "5.85.0"
+slog = "1.5"
+slog-stream = "1.2"
+slog-json = "1.2"
+slog-term = "1.5"
+
