@@ -9,4 +9,4 @@ slog = "1.5"
 slog-stream = "1.2"
 slog-json = "1.2"
 slog-term = "1.5"
-
+rand = "0.3.16"

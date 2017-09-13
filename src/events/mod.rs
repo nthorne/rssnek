@@ -16,11 +16,11 @@ pub struct Dispatcher<T> {
     channels: Vec<Sender<T>>,
     logger: slog::Logger,
     /// The channel to clone and broadcast messages on.
-    msg_tx: Sender<T>,
+    pub msg_tx: Sender<T>,
     msg_rx: Receiver<T>,
     /// If a unit is send on this channel, then the message dispatcher will
     /// exit its loop.
-    term_tx: Sender<()>,
+    pub term_tx: Sender<()>,
     term_rx: Receiver<()>,
 }
 

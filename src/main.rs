@@ -6,37 +6,49 @@ use rssnek::display;
 use rssnek::input;
 use rssnek::logging;
 use rssnek::events;
+use rssnek::objects;
+use rssnek::game;
 
-
-/* TODO:
- *   Create an event dispatcher; this dispatcher should dispatch Event to any
- *   subscribers. API needs to contain subscribe, unsubscribe and dispatch.
- *   On Event, the subscriber needs the instance of the dispatcher in order
- *   to be able to dispatch new events.
- *
- *   All game events should be triggered by Tick events. The Tick events should
- *   be dispatched by a timer thread.
- */
+use std::{thread, time};
+use std::sync::mpsc::{channel, Sender, Receiver};
 
 #[allow(dead_code)]
-#[derive(Hash, PartialEq, Eq, Debug, Clone)]
-enum Event {
-    Tick,
-}
 
 fn main() {
-display::init();
+    display::init();
+    input::init();
 
-let logger = logging::setup();
-info!(logger, "Started application");
+    let logger = logging::setup();
+    info!(logger, "Started application");
 
-let mut dispatcher = events::Dispatcher::<Event>::new(&logger);
-dispatcher.start();
+    // create the event dispatcher
+    let mut dispatcher = events::Dispatcher::<game::Event>::new(&logger);
+    // .. used for the snek to send on
+    let evt = dispatcher.msg_tx.clone();
 
-loop {
-    input::process_input();
-    display::show();
-}
+    // create the god channel, and subscribe..
+    let god_channel = game::god(dispatcher.msg_tx.clone());
+    dispatcher.subscribe(god_channel);
 
-//display::deinit();
+    // used to terminate the application
+    let (tx, rx) = channel();
+    dispatcher.subscribe(tx);
+
+    input::input_loop(dispatcher.msg_tx.clone());
+
+    // event loop..
+    thread::spawn(move || {
+        dispatcher.start();
+    });
+
+    loop {
+        match rx.try_recv() {
+            Ok(game::Event::Terminate) => break,
+            _ => {},
+        }
+    }
+
+    thread::sleep(time::Duration::from_secs(3));
+
+    display::deinit();
 }
