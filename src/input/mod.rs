@@ -6,7 +6,6 @@ use super::game::{Event};
 use std::thread;
 
 pub fn init() {
-    // TODO: Perhaps move these to input..
     // keypad(...) is needed for ncurses to recognize e.g. KEY_UP
     keypad(stdscr(), true);
     noecho();
@@ -29,7 +28,7 @@ pub fn input_loop(dis: Sender<Event>) {
                 KEY_RIGHT => dis.send(Event::Right).unwrap(),
                 Q => dis.send(Event::Terminate).unwrap(),
                 G => dis.send(Event::Grow).unwrap(),
-                c => {mvaddch(10, 10, c as u32); ()},
+                c => (),
             }
         }
     });

@@ -1,14 +1,10 @@
-use std::sync::mpsc::{channel, Sender, Receiver};
+use std::sync::mpsc::{channel, Sender};
 use std::thread;
 use std::process;
 use std::time;
 
+use display::Display;
 use objects::{Snek, Pill};
-use display;
-
-// TODO: not to be used here..
-extern crate ncurses;
-use self::ncurses::*;
 
 
 #[derive(PartialEq, Debug, Clone)]
@@ -33,21 +29,25 @@ pub fn god(dis: Sender<Event>) -> Sender<Event> {
 
 
     let chld = thread::spawn(move || {
-        let mut snek = Snek::new(dis.clone());
-        let mut pill = Pill::new(snek.repr());
+        let d = Display::new();
+        d.dump();
+        d.dump();
 
+        let mut snek = Snek::new(dis.clone(), &d);
+
+        let mut pill = Pill::new(&d);
 
         loop {
             if snek.repr().contains(&pill.pos()) {
                 snek = snek.grow();
-                pill = Pill::new(snek.repr());
+                pill = Pill::new(&d);
                 dis.send(Event::Ate);
             }
 
-            display::show_pill(&pill);
+            d.show_pill(&pill);
 
-            snek = snek.mov();
-            display::show_snek(&snek);
+            snek = snek.mov(&d);
+            d.show_snek(&snek);
             thread::sleep(delay);
 
             match rx.try_recv() {
@@ -58,14 +58,13 @@ pub fn god(dis: Sender<Event>) -> Sender<Event> {
                 Ok(Event::Right) => snek = snek.right(),
                 Ok(Event::Grow) => snek = snek.grow(),
                 Ok(Event::Death) => {
-                    mvprintw(getmaxy(stdscr())/2, getmaxx(stdscr())/2, "SMITTEN!");
-                    refresh();
+                    d.show_text(format!("SMITTEN"));
                     dis.send(Event::Terminate);
                     break;
                 },
                 Ok(Event::Terminate) => break,
                 Ok(Event::Debug(s)) => {
-                    mvprintw(getmaxy(stdscr())-2, 0, s.as_str());
+                    d.show_text(s);
                 }
                 _ => ()
 
