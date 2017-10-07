@@ -1,7 +1,7 @@
 extern crate ncurses;
 
 use self::ncurses::*;
-use std::sync::mpsc::{channel, Sender, Receiver};
+use std::sync::mpsc::Sender;
 use super::game::{Event};
 use std::thread;
 
@@ -28,7 +28,7 @@ pub fn input_loop(dis: Sender<Event>) {
                 KEY_RIGHT => dis.send(Event::Right).unwrap(),
                 Q => dis.send(Event::Terminate).unwrap(),
                 G => dis.send(Event::Grow).unwrap(),
-                c => (),
+                _ => (),
             }
         }
     });

@@ -6,11 +6,10 @@ use rssnek::display;
 use rssnek::input;
 use rssnek::logging;
 use rssnek::events;
-use rssnek::objects;
 use rssnek::game;
 
 use std::{thread, time};
-use std::sync::mpsc::{channel, Sender, Receiver};
+use std::sync::mpsc::channel;
 
 #[allow(dead_code)]
 
@@ -23,8 +22,6 @@ fn main() {
 
     // create the event dispatcher
     let mut dispatcher = events::Dispatcher::<game::Event>::new(&logger);
-    // .. used for the snek to send on
-    let evt = dispatcher.msg_tx.clone();
 
     // create the god channel, and subscribe..
     let god_channel = game::god(dispatcher.msg_tx.clone());

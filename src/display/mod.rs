@@ -2,9 +2,7 @@ extern crate ncurses;
 extern crate rand;
 
 use self::ncurses::*;
-use std::collections::HashSet;
 use objects::{Snek, Pill};
-use std::ptr;
 
 use self::rand::{thread_rng, Rng};
 
@@ -101,10 +99,6 @@ fn create_main_window(max_x: WindowSize, max_y: WindowSize) -> WINDOW {
 }
 
 fn create_log_window(max_x: WindowSize, max_y: WindowSize) -> WINDOW {
-    let mut max_x = 0;
-    let mut max_y = 0;
-    getmaxyx(stdscr(), &mut max_y, &mut max_x);
-
     let width = max_x;
     let height = 10;
     let x = 0;

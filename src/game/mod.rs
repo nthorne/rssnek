@@ -1,6 +1,5 @@
 use std::sync::mpsc::{channel, Sender};
 use std::thread;
-use std::process;
 use std::time;
 
 use display::Display;
@@ -28,12 +27,12 @@ pub fn god(dis: Sender<Event>) -> Sender<Event> {
     let delay = time::Duration::from_millis(50);
 
 
-    let chld = thread::spawn(move || {
+    thread::spawn(move || {
         let d = Display::new();
         d.dump();
         d.dump();
 
-        let mut snek = Snek::new(dis.clone(), &d);
+        let mut snek = Snek::new(dis.clone());
 
         let mut pill = Pill::new(&d);
 
@@ -41,7 +40,7 @@ pub fn god(dis: Sender<Event>) -> Sender<Event> {
             if snek.repr().contains(&pill.pos()) {
                 snek = snek.grow();
                 pill = Pill::new(&d);
-                dis.send(Event::Ate);
+                dis.send(Event::Ate).unwrap();
             }
 
             d.show_pill(&pill);
@@ -59,7 +58,7 @@ pub fn god(dis: Sender<Event>) -> Sender<Event> {
                 Ok(Event::Grow) => snek = snek.grow(),
                 Ok(Event::Death) => {
                     d.show_text(format!("SMITTEN"));
-                    dis.send(Event::Terminate);
+                    dis.send(Event::Terminate).unwrap();
                     break;
                 },
                 Ok(Event::Terminate) => break,

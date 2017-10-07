@@ -1,7 +1,6 @@
 use super::game::{Event};
 use super::display::Display;
 use std::sync::mpsc::{Sender};
-use std::collections::HashSet;
 
 type EventChannel = Sender<Event>;
 pub type Section = (i32, i32);
@@ -16,7 +15,7 @@ pub struct Snek {
 }
 
 impl Snek {
-    pub fn new(tx: EventChannel, d: &Display) -> Snek {
+    pub fn new(tx: EventChannel) -> Snek {
         Snek {
             repr: vec![(1, 1)],
             tail: (0, 0),
@@ -67,27 +66,27 @@ impl Snek {
     }
 
     pub fn up(self) -> Snek {
-        self.evt.send(Event::Debug(format!("UP")));
+        self.evt.send(Event::Debug(format!("UP"))).unwrap();
         Snek {repr: self.repr, tail: self.tail, dx: 0, dy: -1, length: self.length, evt: self.evt}
     }
 
     pub fn down(self) -> Snek {
-        self.evt.send(Event::Debug(format!("DOWN")));
+        self.evt.send(Event::Debug(format!("DOWN"))).unwrap();
         Snek {repr: self.repr, tail: self.tail, dx: 0, dy: 1, length: self.length, evt: self.evt}
     }
 
     pub fn left(self) -> Snek {
-        self.evt.send(Event::Debug(format!("LEFT")));
+        self.evt.send(Event::Debug(format!("LEFT"))).unwrap();
         Snek {repr: self.repr, tail: self.tail, dx: -1, dy: 0, length: self.length, evt: self.evt}
     }
 
     pub fn right(self) -> Snek {
-        self.evt.send(Event::Debug(format!("RIGHT")));
+        self.evt.send(Event::Debug(format!("RIGHT"))).unwrap();
         Snek {repr: self.repr, tail: self.tail, dx: 1, dy: 0, length: self.length, evt: self.evt}
     }
 
     pub fn grow(self) -> Snek {
-        self.evt.send(Event::Debug(format!("GROW:{}", self.length+1)));
+        self.evt.send(Event::Debug(format!("GROW:{}", self.length+1))).unwrap();
         Snek {repr: self.repr, tail: self.tail, dx: self.dx, dy: self.dy, length: self.length+1, evt: self.evt}
     }
 }
