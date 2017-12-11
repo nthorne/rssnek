@@ -89,6 +89,10 @@ impl Snek {
         self.evt.send(Event::Debug(format!("GROW:{}", self.length+1))).unwrap();
         Snek {repr: self.repr, tail: self.tail, dx: self.dx, dy: self.dy, length: self.length+1, evt: self.evt}
     }
+
+    pub fn score(self) -> i32 {
+        self.length as i32
+    }
 }
 
 type Pos = (i32, i32);

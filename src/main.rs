@@ -23,15 +23,18 @@ fn main() {
     // create the event dispatcher
     let mut dispatcher = events::Dispatcher::<game::Event>::new(&logger);
 
+    let input_term = input::input_loop(dispatcher.msg_tx.clone());
+
     // create the god channel, and subscribe..
-    let god_channel = game::god(dispatcher.msg_tx.clone());
+    let god_channel = game::god(
+        dispatcher.msg_tx.clone(),
+        input_term.clone());
+
     dispatcher.subscribe(god_channel);
 
     // used to terminate the application
     let (tx, rx) = channel();
     dispatcher.subscribe(tx);
-
-    input::input_loop(dispatcher.msg_tx.clone());
 
     // event loop..
     thread::spawn(move || {

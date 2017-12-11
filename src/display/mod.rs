@@ -5,6 +5,9 @@ use self::ncurses::*;
 use objects::{Snek, Pill};
 
 use self::rand::{thread_rng, Rng};
+use super::game::Score;
+use std::cmp::max;
+use std::char;
 
 pub type WindowSize = i32;
 pub struct Display {
@@ -74,6 +77,75 @@ impl Display {
         let mut rng = thread_rng();
         rng.gen_range(0, self.max_y)
     }
+
+    pub fn create_dialog(&self, width: i32, height: i32, title: &str) -> WINDOW {
+
+        let y = (self.max_y - height)/2;
+        let x = (self.max_x - width)/2;
+
+        self.show_text(format!("Dialog: {:?},{:?}@{:?},{:?}", width, height, x, y));
+
+        let dialog = newwin(height, width, y, x);
+
+        box_(dialog, 0, 0);
+        scrollok(dialog, true);
+        wclear(dialog);
+        wrefresh(dialog);
+
+        box_(dialog, 0, 0);
+        mvwprintw(dialog, 0, 1, title);
+        dialog
+    }
+
+    pub fn show_highscore_list(&self, s: &Vec<Score>) {
+        let min_window_width = 25;
+        let min_window_height = (s.len()+4) as i32;
+
+        let max_name_width = s.into_iter().map(|e| e.name.len()).max().unwrap_or(0) as i32;
+        let list_items = s.len() as i32;
+
+        let window_width = gt_but_no_more(max_name_width, min_window_width, self.max_x-10);
+        let window_height = gt_but_no_more(list_items, min_window_height, self.max_y-10);
+
+        let highscore_win = self.create_dialog(window_width, window_height, "Highscores");
+
+        for (i, e) in s.iter().enumerate() {
+            mvwprintw(highscore_win, (i+2) as i32, 3, format!("{:2}. {:?}  {:?}", (i+1), e.name, e.score).as_str());
+        }
+        wrefresh(highscore_win);
+    }
+
+    pub fn input_dialog(&self, title: &str, length: i32) -> String {
+        let min_window_width = 25;
+
+        let window_width = gt_but_no_more(length, min_window_width, self.max_x-10);
+        let window_height = 5;
+
+        let highscore_win = self.create_dialog(window_width, window_height, title);
+
+        wrefresh(highscore_win);
+
+        let mut res = String::new();
+        curs_set(CURSOR_VISIBILITY::CURSOR_VISIBLE);
+        noecho();
+        timeout(-1); // timeout waiting for input
+        flushinp();
+        mvwprintw(highscore_win, 2, 3, "");
+        wrefresh(highscore_win);
+        while 3 > res.len() {
+            let c = char::from_u32(getch() as u32).unwrap_or(' ');
+            if c.is_digit(10) || c.is_alphabetic() {
+                res.push_str(&c.to_uppercase().to_string());
+
+                mvwprintw(highscore_win, 2, 3, res.as_str());
+                wrefresh(highscore_win);
+            }
+        }
+        curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
+
+        res.truncate(length as usize);
+        res
+    }
 }
 
 pub fn init() {
@@ -112,4 +184,13 @@ fn create_log_window(max_x: WindowSize, max_y: WindowSize) -> WINDOW {
     wrefresh(log_win);
 
     log_win
+}
+
+fn gt_but_no_more(v: i32, lo: i32, hi: i32) -> i32 {
+    let min = max(v, lo);
+    if max(v, lo) > hi {
+        hi
+    } else {
+        min
+    }
 }
