@@ -18,25 +18,18 @@ pub struct Dispatcher<T> {
     /// The channel to clone and broadcast messages on.
     pub msg_tx: Sender<T>,
     msg_rx: Receiver<T>,
-    /// If a unit is send on this channel, then the message dispatcher will
-    /// exit its loop.
-    pub term_tx: Sender<()>,
-    term_rx: Receiver<()>,
 }
 
 impl <T>Dispatcher<T> where T: Send + Clone + Debug + 'static {
     /// Construct the Dispatcher, and its message, and termination channels.
     pub fn new(root_logger: &Logger) -> Dispatcher<T> {
         let (tx, rx) = mpsc::channel();
-        let (ttx, trx) = mpsc::channel();
 
         Dispatcher {
             channels: Vec::new(),
             logger: root_logger.clone(),
             msg_tx: tx,
             msg_rx: rx,
-            term_tx: ttx,
-            term_rx: trx,
         }
     }
 
@@ -53,11 +46,7 @@ impl <T>Dispatcher<T> where T: Send + Clone + Debug + 'static {
         info!(self.logger, "Starting message dispatcher loop..");
 
         loop {
-            if let Ok(_) = self.term_rx.try_recv() {
-                info!(self.logger, "Got termination signal. Shutting down event loop.");
-                break;
-            }
-            if let Ok(msg) = self.msg_rx.try_recv() {
+            if let Ok(msg) = self.msg_rx.recv() {
                 info!(self.logger, "Got message"; "msg" => format!("{:?}", msg));
 
                 let current_channels = self.channels.clone();
@@ -73,7 +62,6 @@ impl <T>Dispatcher<T> where T: Send + Clone + Debug + 'static {
                 }
             }
         }
-        info!(self.logger, "Exited event loop..");
     }
 
     /// Add a subscribing channel.
@@ -119,7 +107,6 @@ mod tests {
         let mut dis = construct_dispatcher();
 
         let tx = dis.msg_tx.clone();
-        let term = dis.term_tx.clone();
 
         let chld = thread::spawn(move || {
             dis.start();
@@ -135,7 +122,6 @@ mod tests {
         let mut dis = construct_dispatcher();
 
         let tx = dis.msg_tx.clone();
-        let term = dis.term_tx.clone();
 
         let (sub1_tx, sub1_rx) = channel();
         dis.subscribe(sub1_tx);
@@ -155,7 +141,6 @@ mod tests {
         let mut dis = construct_dispatcher();
 
         let tx = dis.msg_tx.clone();
-        let term = dis.term_tx.clone();
 
         let (sub1_tx, sub1_rx) = channel();
         let (sub2_tx, sub2_rx) = channel();
@@ -180,7 +165,6 @@ mod tests {
         let mut dis = construct_dispatcher();
 
         let tx = dis.msg_tx.clone();
-        let term = dis.term_tx.clone();
 
         let (sub1_tx, sub1_rx) = channel();
         dis.subscribe(sub1_tx);

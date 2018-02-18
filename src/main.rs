@@ -42,7 +42,7 @@ fn main() {
     });
 
     loop {
-        match rx.try_recv() {
+        match rx.recv() {
             Ok(game::Event::Terminate) => break,
             _ => {},
         }
