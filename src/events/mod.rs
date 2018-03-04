@@ -113,8 +113,6 @@ mod tests {
         });
 
         assert_eq!(true, tx.send(TestEvent::Event1).is_ok());
-
-        assert_eq!(true, term.send(()).is_ok());
     }
 
     #[test]
@@ -132,8 +130,6 @@ mod tests {
 
         tx.send(TestEvent::Event1).unwrap();
         assert_eq!(Ok(TestEvent::Event1), sub1_rx.recv());
-
-        assert_eq!(true, term.send(()).is_ok());
     }
 
     #[test]
@@ -156,8 +152,6 @@ mod tests {
 
         assert_eq!(Ok(TestEvent::Event1), sub1_rx.recv());
         assert_eq!(Ok(TestEvent::Event1), sub2_rx.recv());
-
-        assert_eq!(true, term.send(()).is_ok());
     }
 
     #[test]
@@ -181,7 +175,5 @@ mod tests {
 
         tx.send(TestEvent::Event3).unwrap();
         assert_eq!(Ok(TestEvent::Event3), sub1_rx.recv());
-
-        assert_eq!(true, term.send(()).is_ok());
     }
 }
